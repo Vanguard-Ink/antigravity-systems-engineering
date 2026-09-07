@@ -1,4 +1,21 @@
-# Python
+# ==============================================================================
+# Git Ignore - Antigravity Systems Companion Repo
+# ==============================================================================
+
+# Book Manuscripts, Drafts, and Editorial Documents (Proprietary)
+manuscript/
+chapters/
+drafts/
+MD.md
+appendices/
+research/
+*.docx
+*.doc
+*.pdf
+*.epub
+*.mobi
+
+# Python & Environment
 __pycache__/
 *.py[cod]
 *$py.class
