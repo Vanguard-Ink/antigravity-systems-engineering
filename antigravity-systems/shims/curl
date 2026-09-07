@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# ==============================================================================
+# Antigravity Egress Guardrail Shim: curl
+# ==============================================================================
+set -euo pipefail
+
+REAL_CURL="/usr/bin/curl"
+AUDIT_LOG="/tmp/antigravity-egress-audit.log"
+
+# 1. Inspect parameters for sensitive local credentials
+for arg in "$@"; do
+    if [[ "$arg" =~ \.env|\.aws|\.ssh|id_rsa|credentials|shadow ]]; then
+        echo "[SECURITY SHIM BLOCKED] curl command blocked: attempt to access sensitive file: $arg" >&2
+        echo "$(date -u --iso-8601=seconds) BLOCKED_FILE_LEAK PID=$$ ARGS=$*" >> "$AUDIT_LOG"
+        exit 126
+    fi
+done
+
+# 2. Enforce offline policy if network is restricted
+if [[ "${ANTIGRAVITY_OFFLINE:-1}" == "1" ]]; then
+    echo "[SECURITY SHIM BLOCKED] curl egress blocked: offline execution mode active." >&2
+    echo "$(date -u --iso-8601=seconds) BLOCKED_OFFLINE_EGRESS PID=$$ ARGS=$*" >> "$AUDIT_LOG"
+    exit 126
+fi
+
+# 3. Route through egress inspecting proxy if configured
+if [[ -n "${ANTIGRAVITY_EGRESS_PROXY:-}" ]]; then
+    exec "$REAL_CURL" --proxy "$ANTIGRAVITY_EGRESS_PROXY" "$@"
+else
+    exec "$REAL_CURL" "$@"
+fi

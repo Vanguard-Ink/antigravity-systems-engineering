@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# ==============================================================================
+# Antigravity Ambient Authority Scrubber
+# Purpose: Purges inherited environment block and launches target command
+#          with minimal, sanitized POSIX environment variables.
+# ==============================================================================
+exec /usr/bin/env -i \
+    HOME="${HOME:-/home/agent}" \
+    USER="${USER:-agent}" \
+    LANG="C.UTF-8" \
+    LC_ALL="C.UTF-8" \
+    TERM="xterm-256color" \
+    PATH="/usr/local/shim:/usr/local/bin:/usr/bin:/bin" \
+    ANTIGRAVITY_SANDBOX="1" \
+    "$@"

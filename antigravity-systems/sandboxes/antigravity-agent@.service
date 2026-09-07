@@ -1,0 +1,46 @@
+[Unit]
+Description=Antigravity Autonomous Headless Agent Worker (%i)
+After=network.target local-fs.target
+Documentation=https://github.com/Vanguard-Ink/antigravity-systems-engineering
+
+[Service]
+Type=notify
+ExecStart=/usr/local/bin/python3 /opt/antigravity/harnesses/supervisor.py --worker-id=%i
+Restart=on-failure
+RestartSec=5s
+
+# Liveness Watchdog (Dead Man's Switch)
+# Supervising daemon must emit sd_notify(0, "WATCHDOG=1") every 30s.
+WatchdogSec=30s
+
+# cgroups v2 Resource Ceilings
+Slice=antigravity.slice
+TasksMax=64
+MemoryMax=1G
+MemoryHigh=800M
+CPUWeight=100
+IOWeight=100
+
+# Filesystem & OS Hardening
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+NoNewPrivileges=yes
+
+# Linux Capability Bounding
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+AmbientCapabilities=
+
+# Structured Journal Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=antigravity-%i
+
+[Install]
+WantedBy=multi-user.target

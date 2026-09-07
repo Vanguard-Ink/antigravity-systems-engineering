@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# ==============================================================================
+# Antigravity NPM / Package Guardrail Shim
+# ==============================================================================
+set -euo pipefail
+
+REAL_NPM="/usr/bin/npm"
+
+# Disallow unpinned remote package execution
+for arg in "$@"; do
+    case "$arg" in
+        publish|login|adduser)
+            echo "[SECURITY SHIM BLOCKED] Autonomous agents are forbidden from publishing or authenticating to package registries." >&2
+            exit 126
+            ;;
+        --ignore-scripts)
+            # Safe flag
+            ;;
+    esac
+done
+
+exec "$REAL_NPM" "$@"

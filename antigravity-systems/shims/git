@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# ==============================================================================
+# Antigravity Git Guardrail Shim
+# ==============================================================================
+set -euo pipefail
+
+REAL_GIT="/usr/bin/git"
+
+# 1. Block command execution flags
+for arg in "$@"; do
+    case "$arg" in
+        --upload-pack*|--exec*|-c\ core.editor=*|-c\ sequence.editor=*)
+            echo "[SECURITY SHIM BLOCKED] Prohibited git argument: $arg" >&2
+            exit 126
+            ;;
+    esac
+done
+
+SUBCMD="${1:-}"
+
+case "$SUBCMD" in
+    push)
+        # Block force push
+        for arg in "$@"; do
+            if [[ "$arg" == "--force" || "$arg" == "-f" ]]; then
+                echo "[SECURITY SHIM BLOCKED] Autonomous agents are strictly forbidden from force-pushing." >&2
+                exit 126
+            fi
+        done
+        exec "$REAL_GIT" "$@"
+        ;;
+    clean)
+        # Block force clean
+        for arg in "$@"; do
+            if [[ "$arg" == "-f" || "$arg" == "-force" ]]; then
+                echo "[SECURITY SHIM BLOCKED] Unsupervised git clean -f prohibited. Use dry-run first." >&2
+                exit 126
+            fi
+        done
+        exec "$REAL_GIT" "$@"
+        ;;
+    *)
+        exec "$REAL_GIT" "$@"
+        ;;
+esac

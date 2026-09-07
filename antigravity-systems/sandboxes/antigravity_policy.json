@@ -1,0 +1,33 @@
+{
+  "$schema": "https://antigravity.google/schemas/v1/runtime-config.json",
+  "policy_name": "antigravity-strict-devsecops",
+  "version": "1.0.0",
+  "isolation": {
+    "engine": "bubblewrap",
+    "unshare": ["user", "ipc", "pid", "net", "uts", "cgroup"],
+    "drop_ambient_authority": true
+  },
+  "quotas": {
+    "max_pids": 64,
+    "max_memory_mb": 1024,
+    "max_cpu_percent": 80,
+    "timeout_seconds": 300
+  },
+  "filesystem": {
+    "rootfs_readonly": true,
+    "overlay_workspace": true,
+    "bind_mounts": [
+      { "source": "/usr", "dest": "/usr", "mode": "ro" },
+      { "source": "/lib", "dest": "/lib", "mode": "ro" },
+      { "source": "/bin", "dest": "/bin", "mode": "ro" },
+      { "source": "/etc/ssl", "dest": "/etc/ssl", "mode": "ro" }
+    ],
+    "tmpfs": [
+      { "dest": "/tmp", "size_mb": 256 }
+    ]
+  },
+  "network": {
+    "egress": "deny_all",
+    "dns_proxy_enabled": false
+  }
+}
